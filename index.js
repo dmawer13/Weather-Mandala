@@ -1,15 +1,23 @@
-const passport = require('passport')
-const StravaStrategy = require('passport-strava-oauth2').Strategy
+var StravaApiV3 = require('strava_api_v3');
+var defaultClient = StravaApiV3.ApiClient.instance;
 
-console.log('I think it works')
+// Configure OAuth2 access token for authorization: strava_oauth
+var strava_oauth = defaultClient.authentications['strava_oauth'];
+strava_oauth.accessToken = "67644b90e63920b4628b9e17f95678d237b090d5"
 
-//user id: 23656
-//client secret: 930196a4e5cb3fbf4bac1fdb11003c03fb76ec76
-//callbackURL: 
+var api = new StravaApiV3.ActivitiesApi()
 
+var id = 2122222352; // {Long} The identifier of the activity.
 
-const stravaConfig = {
-    clientID: process.env.23656,
-    clientSecret: process.env.,
-    callbackURL: process.env.STRAVA_CALLBACK
+var opts = { 
+  'includeAllEfforts': true // {Boolean} To include all segments efforts.
+};
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
   }
+};
+api.getActivityById(id, opts, callback);
