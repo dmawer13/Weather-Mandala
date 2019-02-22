@@ -1,10 +1,285 @@
+<!--https://www.strava.com/api/v3/activities/2122222352?access_token=ae68c8e6eda9b0f2c1a6cbb371b5a36baf1bf75b-->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <title>Strava Test</title>
+    <title>Strava 4</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet'>
+<!--    <link href="/mystyle.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     
-    <script src="index.js"></script>
-</head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+  integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+  crossorigin=""/>
+    
+
+   <style>
+            #map {
+            height:800px;
+        }
+    </style>
+    
+</head>  
+    
+<body>   
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+  integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+  crossorigin=""></script>
+    <script type="text/javascript" src="https://rawgit.com/jieter/Leaflet.encoded/master/Polyline.encoded.js"></script>
+      
+    
+<div class="container-fluid" style="background-color:lightblue;">    
+    <div class="row">
+        <div class="col-sm-12" style="word-wrap:break-word;">
+    <h1>Strava test 4: Abandoning PHP</h1>
+    <h4>This program uses Javascript to send a http GET request to Strava for a specified number of recent activities.  Javascript sorts activities by hikes, runs, and rides into separate arrays. Leaflet displays each activity type by color.  Activities that did not use GPS (trainer = true) are excluded from arrays.  </h4>
+    <p> 
+ </div>
+    
+    
+<div id="map"></div>   
+        
+<script>
+
+
+
+var dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {id: 'map',
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',  
+}); 
+var regular = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {id: 'map',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
+    
+var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	maxZoom: 17,
+	attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+});
+    
+var Stamen_Watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
+	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	subdomains: 'abcd',
+	minZoom: 1,
+	maxZoom: 16,
+	ext: 'jpg' });
+    
+var map = L.map('map', 
+{
+    center: [42.8, -78.6],
+    zoom: 12,
+    layers: [dark]
+});    
+
+var baseMaps = {
+    "Dark": dark,
+    "Regular": regular,
+    "Topo": topo,
+    "Watercolor": Stamen_Watercolor
+};                       
+            
+L.control.layers(baseMaps).addTo(map);
+
+
+    
+//var map = L.map('map').setView([42.8, -78.6], 12);
+
+
+    
+function distCalc(x) {
+    var y = x/1609.344;
+    return y.toFixed(2);
+}    
+    
+function speedCalc(x) {
+    var y = x/0.44704;
+    return y.toFixed(2);
+}  
+    
+function gainCalc(x) {
+    var y = x/0.3048;
+    return y.toFixed(2);
+}
+    
+//getting the JSON using JS
+ 
+var perPage = 200;
+    
+var stravaJSdata = fetch('https://www.strava.com/api/v3/activities?page=1&per_page=' + perPage + '&access_token=ae68c8e6eda9b0f2c1a6cbb371b5a36baf1bf75b')
+  .then(
+    function(response) {
+      if (response.status !== 200) {
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
+        return;
+      }
+      // Examine the text in the response, DO ALL MAPPING STUFF IN HERE. LIKE A TRY CATCH BLOCK.
+      response.json().then(function(allActivities) {
+
+      console.log(allActivities);    
+    
+    var runArr = [];
+    var rideArr = [];  
+    var hikeArr = [];  
+          
+    var lineWeight = 2;
+        
+for(let activity of allActivities) {
+    
+    let polyline = activity['map']['summary_polyline'];
+    let distance = activity['distance'];
+    let startDate = activity['start_date_local'];
+    let avgSpd = activity['average_speed'];
+    let maxSpd = activity['max_speed'];
+    let gain = activity['total_elevation_gain'];
+    
+    if(activity['trainer'] == false) {
+            
+            if(activity['type'] == "Run") {
+                
+                runArr.push([polyline, distance, startDate]); 
+                  
+     } if(activity['type'] == "Ride") {
+                  
+                rideArr.push([polyline, distance, startDate, avgSpd, maxSpd]);
+    
+     } if(activity['type'] == "Hike") {
+            
+                hikeArr.push([polyline, distance, startDate, gain]);
+        }
+        }}
+    
+for(let single of runArr) {
+        
+        let polyline = single[0];
+        let distance = distCalc(single[1]).toString();
+        let timeDate = single[2];
+        
+         var coordinates = L.Polyline.fromEncoded(polyline).getLatLngs();
+                                                                                                        
+         var convert = L.polyline(
+          coordinates,
+          {
+              color: 'red',
+              weight: lineWeight,
+              opacity: .2,
+              lineJoin: 'round'
+          })
+        convert.bindPopup(distance + " mi" + "<br>" + timeDate)
+            .addTo(map);
+    } 
+    
+for(let single of rideArr) {
+    
+        let polyline = single[0];
+        let distance = distCalc(single[1]).toString();
+        let timeDate = single[2];
+        let avgSpd = speedCalc(single[3]).toString();
+        let maxSpd = speedCalc(single[4]).toString();
+    
+        var coordinates = L.Polyline.fromEncoded(single[0]).getLatLngs();
+                                                                                                        
+         var convert = L.polyline(
+          coordinates,
+          {
+              color: 'blue',
+              weight: lineWeight,
+              opacity: .2,
+              lineJoin: 'round'
+          })
+        convert.bindPopup(distCalc(single[1]).toString() + " mi" + "<br>" + timeDate + "<br>" + "Speed: " + avgSpd + " mph" +"<br>" + "Max: " + maxSpd + " mph")
+            .addTo(map);
+    }
+
+for(let single of hikeArr) {
+        
+        let gain = single[3];    
+    
+        var coordinates = L.Polyline.fromEncoded(single[0]).getLatLngs();
+                                                                                                   
+         var convert = L.polyline(
+          coordinates,
+          {
+              color: 'green',
+              weight: lineWeight,
+              opacity: .8,
+              lineJoin: 'round'
+          })
+        convert.bindPopup(distCalc(single[1]).toString() + " mi" + "<br>" + "Gain: " + gainCalc(gain).toString() + " ft")
+           .addTo(map);
+    }
+            
+//         var coordinates = L.Polyline.fromEncoded(activity['map']['summary_polyline']).getLatLngs();
+//        console.log(activity);
+//         L.polyline(
+//          coordinates,
+//          {
+//              color: 'red',
+//              weight: 2,
+//              opacity: .4,
+//              lineJoin: 'round'
+//          }
+//      ).addTo(map);
+//    }      }
+      
+//    for(let encoded of)      
+
+      
+    //end code here.  
+    })});
+    
+    
+    
+
+    
+
+    
+</script>
+         
+    
+<script>
+
+//    
+//          
+//var polyline = L.polyline(
+//    coordinates,
+//    {
+//        color: "#00ff00",
+//        weight: 3,
+//        opacity: .7,
+////        dashArray: '20,15',
+//        lineJoin: 'round'
+//    }
+//).addTo(map);  
+//    
+//        console.log(data);
+//      });
+//    }
+//  )
+//
+//
+//
+//  .catch(function(err) {
+//    console.log('Fetch Error :-S', err);
+//  });
+//    
+    
+    
+//for (var i = 1; i < 3; i++) {
+//    var coordinatesIterate = L.Polyline.fromEncoded();
+//}
+
+    
+//Original OpenStreetMap Tiles    
+//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+//}).addTo(map);
+//
+
+
+</script>    
+
+</body>
+
+
+
