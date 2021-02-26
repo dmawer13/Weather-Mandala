@@ -5,7 +5,7 @@ var weather;
 var cityInput = "Buffalo";
 
 function askWeather() {
-    loadJSON('https://api.openweathermap.org/data/2.5/weather?q=' + cityInput + '&APPID=40223864a797a6dcafe07148fc944088&units=imperial', gotData);
+    loadJSON('api.openweathermap.org/data/2.5/weather?q=' + cityInput + '&APPID=40223864a797a6dcafe07148fc944088&units=imperial', gotData);
 }
 
 function setup() {
