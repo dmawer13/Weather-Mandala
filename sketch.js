@@ -2,7 +2,10 @@ var weather;
 
 //Put City name here then run program:
 
-var cityInput = "Dakar";
+var cityInput;
+
+let sel;
+let selCity;
 
 function askWeather() {
     loadJSON('api.openweathermap.org/data/2.5/weather?q=' + cityInput + '&APPID=40223864a797a6dcafe07148fc944088&units=imperial', gotData);
@@ -12,6 +15,13 @@ function setup() {
 createCanvas(1000, 1000);
 setInterval(askWeather, 1000);     
 rectMode(CENTER);
+    
+sel = createSelect();
+sel.option('Buffalo');
+sel.option('Dakar');
+sel.option('Sydney');
+//sel.option('Sydney');
+sel.changed(changeCity);
 }
 
 function gotData(data) {
@@ -438,6 +448,18 @@ function draw() {
 
 
 }
+
+function changeCity() {
+    let val = sel.value();
+    if(val == 'Buffalo'){
+        cityInput = 'Buffalo';
+    } else if(val == 'Dakar') {
+        cityInput = 'Dakar'; 
+    } else if(val == 'Sydney') {
+        cityInput = 'Sydney'; }
+    }
+
+    
 
 
 //function setup() {
