@@ -2,7 +2,7 @@ var weather;
 
 //Put City name here then run program:
 
-var cityInput = "Buffalo";
+var cityInput = "Dakar";
 
 function askWeather() {
     loadJSON('api.openweathermap.org/data/2.5/weather?q=' + cityInput + '&APPID=40223864a797a6dcafe07148fc944088&units=imperial', gotData);
