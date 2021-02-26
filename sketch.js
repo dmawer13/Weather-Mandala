@@ -2,7 +2,7 @@ var weather;
 
 //Put City name here then run program:
 
-var cityInput = "";
+var cityInput = "Buffalo";
 
 let sel;
 let selCity;
