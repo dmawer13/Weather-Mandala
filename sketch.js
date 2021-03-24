@@ -8,11 +8,22 @@ let sel;
 let selCity;
 
 
-function askWeather() {
-    loadJSON('api.openweathermap.org/data/2.5/weather?q=' + 'cityInput' + '&APPID=40223864a797a6dcafe07148fc944088&units=imperial', gotData);
-}
+//function askWeather() {
+//    loadJSON('api.openweathermap.org/data/2.5/weather?q=' + 'cityInput' + '&APPID=40223864a797a6dcafe07148fc944088&units=imperial', gotData);
+//}
 
 function setup() {
+
+let url = 'http://api.openweathermap.org/data/2.5/weather?q=Buffalo&APPID=40223864a797a6dcafe07148fc944088&units=imperial';
+
+    function askWeather() {
+    loadJSON(url, gotData, 'jsonp');
+}
+
+function gotData(data) {
+    weather = data;
+}
+
 createCanvas(1000, 1000);
 setInterval(askWeather, 1000);     
 rectMode(CENTER);
@@ -25,9 +36,7 @@ sel.option('Sydney');
 sel.changed(changeCity);
 }
 
-function gotData(data) {
-    weather = data;
-}
+
 
 function tempVarsAndRanges() {
     var temp = weather.main.temp;
