@@ -2,32 +2,28 @@ var weather;
 
 //Put City name here then run program:
 
-var cityInput = "Buffalo";
+//var cityInput = "Buffalo";
+let cityInput = "Buffalo";
+//let cityInput = "Dakar";
+//let cityInput = "Chicago";
 
 let sel;
 let selCity;
 
-
-//function askWeather() {
-//    loadJSON('api.openweathermap.org/data/2.5/weather?q=' + 'cityInput' + '&APPID=40223864a797a6dcafe07148fc944088&units=imperial', gotData);
-//}
-
 function setup() {
 
-let url = 'http://api.openweathermap.org/data/2.5/weather?q=Buffalo&APPID=40223864a797a6dcafe07148fc944088&units=imperial';
+let url = 'http://api.openweathermap.org/data/2.5/weather?q=' + cityInput + '&APPID=40223864a797a6dcafe07148fc944088&units=imperial';
 
-    function askWeather() {
+function askWeather() {
     loadJSON(url, gotData, 'jsonp');
 }
 
 function gotData(data) {
     weather = data;
 }
-
 createCanvas(1000, 1000);
-setInterval(askWeather, 1000);     
+setInterval(askWeather, 1000); 
 rectMode(CENTER);
-    
 sel = createSelect();
 sel.option('Buffalo');
 sel.option('Dakar');
@@ -35,6 +31,21 @@ sel.option('Sydney');
 //sel.option('Sydney');
 sel.changed(changeCity);
 }
+
+
+function changeCity() {
+    let val = sel.value();
+//    cityInput = val;
+    if(val == 'Buffalo'){
+        cityInput = 'Buffalo';
+    } else if(val == 'Dakar') {
+        cityInput = 'Dakar'; 
+    } else if(val == 'Sydney') {
+        cityInput = 'Sydney'; }
+    
+    console.log(cityInput);
+    }
+
 
 
 
@@ -459,15 +470,6 @@ function draw() {
 
 }
 
-function changeCity() {
-    let val = sel.value();
-    if(val == 'Buffalo'){
-        cityInput = 'Buffalo';
-    } else if(val == 'Dakar') {
-        cityInput = 'Dakar'; 
-    } else if(val == 'Sydney') {
-        cityInput = 'Sydney'; }
-    }
 
     
 
